@@ -48,7 +48,7 @@ class ConversationAgent(BaseAgent):
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(prompt)
+                response = await self.llm.generate_response_async(prompt)
                 parsed_response = self.output_parser.parse(response)
                 break
             except (KeyboardInterrupt, bdb.BdbQuit):

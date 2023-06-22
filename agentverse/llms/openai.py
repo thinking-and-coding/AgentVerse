@@ -68,7 +68,7 @@ class OpenAICompletion(BaseCompletionModel):
             total_tokens=response["usage"]["total_tokens"],
         )
 
-    async def agenerate_response(self, prompt: str) -> LLMResult:
+    async def generate_response_async(self, prompt: str) -> LLMResult:
         response = await openai.Completion.acreate(prompt=prompt, **self.args.dict())
         return LLMResult(
             content=response["choices"][0]["text"],
@@ -111,7 +111,7 @@ class OpenAIChat(BaseChatModel):
             total_tokens=response["usage"]["total_tokens"],
         )
 
-    async def agenerate_response(self, prompt: str) -> LLMResult:
+    async def generate_response_async(self, prompt: str) -> LLMResult:
         messages = self._construct_messages(prompt)
         try:
             response = await openai.ChatCompletion.acreate(

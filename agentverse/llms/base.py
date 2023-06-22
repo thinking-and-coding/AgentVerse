@@ -24,7 +24,7 @@ class BaseLLM(BaseModel):
         pass
 
     @abstractmethod
-    def agenerate_response(self, **kwargs) -> LLMResult:
+    def generate_response_async(self, **kwargs) -> LLMResult:
         pass
 
 

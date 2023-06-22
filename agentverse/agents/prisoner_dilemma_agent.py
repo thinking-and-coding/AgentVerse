@@ -53,7 +53,7 @@ class PrisonerDilemaAgent(BaseAgent):
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(prompt)
+                response = await self.llm.generate_response_async(prompt)
                 parsed_response = self.output_parser.parse(self, environment, response)
                 break
             except Exception as e:
