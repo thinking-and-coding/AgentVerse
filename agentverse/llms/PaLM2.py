@@ -14,10 +14,13 @@ if api_key is None:
     raise Exception("ERROR PaLM2 CONFIG!")
 palm.configure(api_key=api_key)
 
+
 class PaLMCompletionArgs(BaseModelArgs):
     model: str = Field(default="text-bison-001")
+    temperature: float = Field(default=0)
     stop_sequences: str = Field(default='\n')
     max_output_tokens: int = Field(default=2048)
+
 
 @llm_registry.register("text-bison-001")
 class PaLMCompletion(BaseCompletionModel):
@@ -33,22 +36,14 @@ class PaLMCompletion(BaseCompletionModel):
         super().__init__(args=args, max_retry=max_retry)
 
     def generate_response(self, prompt: str) -> LLMResult:
-        response = palm.generate_text(prompt=prompt, **self.args.dict())
-        return LLMResult(
-            content=response["choices"][0]["text"],
-            send_tokens=response["usage"]["prompt_tokens"],
-            recv_tokens=response["usage"]["completion_tokens"],
-            total_tokens=response["usage"]["total_tokens"],
-        )
+        completion = palm.generate_text(prompt=prompt, **self.args.dict())
+
+        return LLMResult(content=completion.result)
 
     async def generate_response_async(self, prompt: str) -> LLMResult:
-        response = await palm.generate_text(prompt=prompt, **self.args.dict())
-        return LLMResult(
-            content=response["choices"][0]["text"],
-            send_tokens=response["usage"]["prompt_tokens"],
-            recv_tokens=response["usage"]["completion_tokens"],
-            total_tokens=response["usage"]["total_tokens"],
-        )
+        completion = palm.generate_text(prompt=prompt, **self.args.dict())
+        return LLMResult(content=completion.result)
+
 
 class PaLMChatArgs(BaseModelArgs):
     model: str = Field(default="text-bison-001")
@@ -75,19 +70,13 @@ class PaLMChat(BaseCompletionModel):
         super().__init__(args=args, max_retry=max_retry)
 
     def generate_response(self, prompt: str) -> LLMResult:
-        response = palm.generate_text(prompt=prompt, **self.args.dict())
+        response = palm.chat(prompt=prompt, **self.args.dict())
         return LLMResult(
-            content=response["choices"][0]["text"],
-            send_tokens=response["usage"]["prompt_tokens"],
-            recv_tokens=response["usage"]["completion_tokens"],
-            total_tokens=response["usage"]["total_tokens"],
+            content=response.last,
         )
 
     async def generate_response_async(self, prompt: str) -> LLMResult:
-        response = await palm.generate_text(prompt=prompt, **self.args.dict())
+        response = await palm.chat_async(prompt=prompt, **self.args.dict())
         return LLMResult(
-            content=response["choices"][0]["text"],
-            send_tokens=response["usage"]["prompt_tokens"],
-            recv_tokens=response["usage"]["completion_tokens"],
-            total_tokens=response["usage"]["total_tokens"],
+            content=response.last,
         )
