@@ -16,13 +16,13 @@ palm.configure(api_key=api_key)
 
 
 class PaLMCompletionArgs(BaseModelArgs):
-    model: str = Field(default="text-bison-001")
+    model: str = Field(default="models/text-bison-001")
     temperature: float = Field(default=0)
     stop_sequences: str = Field(default='\n')
     max_output_tokens: int = Field(default=2048)
 
 
-@llm_registry.register("text-bison-001")
+@llm_registry.register("PaLM_completion")
 class PaLMCompletion(BaseCompletionModel):
     args: PaLMCompletionArgs = Field(default_factory=PaLMCompletionArgs)
 
@@ -38,15 +38,21 @@ class PaLMCompletion(BaseCompletionModel):
     def generate_response(self, prompt: str) -> LLMResult:
         completion = palm.generate_text(prompt=prompt, **self.args.dict())
 
-        return LLMResult(content=completion.result)
+        return LLMResult(content=completion.result,
+                         send_tokens=len(prompt),
+                         recv_tokens=len(completion.result),
+                         total_tokens=len(prompt)+len(completion.result))
 
     async def generate_response_async(self, prompt: str) -> LLMResult:
         completion = palm.generate_text(prompt=prompt, **self.args.dict())
-        return LLMResult(content=completion.result)
+        return LLMResult(content=completion.result,
+                         send_tokens=len(prompt),
+                         recv_tokens=len(completion.result),
+                         total_tokens=len(prompt)+len(completion.result))
 
 
 class PaLMChatArgs(BaseModelArgs):
-    model: str = Field(default="text-bison-001")
+    model: str = Field(default="models/text-bison-001")
     max_output_tokens: int = Field(default=2048)
     temperature: float = Field(default=0.5)
     top_p: int = Field(default=1)
@@ -56,7 +62,7 @@ class PaLMChatArgs(BaseModelArgs):
     frequency_penalty: int = Field(default=0)
 
 
-@llm_registry.register("text-bison-001")
+@llm_registry.register("PaLM_chat")
 class PaLMChat(BaseCompletionModel):
     args: PaLMChatArgs = Field(default_factory=PaLMChatArgs)
 
@@ -71,12 +77,14 @@ class PaLMChat(BaseCompletionModel):
 
     def generate_response(self, prompt: str) -> LLMResult:
         response = palm.chat(prompt=prompt, **self.args.dict())
-        return LLMResult(
-            content=response.last,
-        )
+        return LLMResult(content=response.last,
+                         send_tokens=len(prompt),
+                         recv_tokens=len(response.last),
+                         total_tokens=len(prompt)+len(response.last))
 
     async def generate_response_async(self, prompt: str) -> LLMResult:
         response = await palm.chat_async(prompt=prompt, **self.args.dict())
-        return LLMResult(
-            content=response.last,
-        )
+        return LLMResult(content=response.last,
+                         send_tokens=len(prompt),
+                         recv_tokens=len(response.last),
+                         total_tokens=len(prompt)+len(response.last))
